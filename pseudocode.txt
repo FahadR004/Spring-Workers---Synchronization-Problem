@@ -1,0 +1,35 @@
+Let us consider a high level pseudocode approach to our problem!
+
+Firstly, the number of fruits is globally defined.
+The tree is globally defined with the total number of fruits.
+
+The main function will initialize a crate of 12 slots and run 3 picker processes in parallel. Each picker will not have it's own crate and use a shared empty crate as provided by the main function.
+
+What will the picker do once started?
+Each picker will go to the tree and place a fruit in the crate which is a shared modifiable space, meaning only one picker can access it a any point in time. So, a lock will placed on the crate during it's access. Similarly, the tree is also a shared modifiable space, meaning one lock will also be required here. Since, the tree is an integer array from which numbers will be removed/popped out by pickers to represent fruits being taken from the tree.  
+
+When the crate is full, the picker will call the loader. And every picker will now wait until the loader empties the crate into the truck (we could just empty it in code) and returns an empty crate to the pickers.
+
+
+My main program goes like this:
+- I give access to an empty crate to all my processes and call 3 picker processes in parallel
+- Each process checks the tree then, if there is fruits:
+    - Picks fruits and puts in the crate
+    - If crate is not full:
+        - Place fruits in it
+    - Else crate is full:
+        - Call loader
+            - Loader will empty crate in the truck and give a new crate to the picker
+- Else if tree is bare:
+    - Picker will return to the main function
+    - Loader will check for any partially filled crates and empty into truck
+
+2 modifiable shared spaces and 1 shared process:
+- Tree (Removal of fruits, no addition)
+- Crate (Addition and Removal of Fruits. (Destructive Readout and Write))
+- Loader (Only one picker should call the loader at a time)
+
+3 locks will be required for mutual exclusion
+- One around tree
+- One around crate
+- One around loader
